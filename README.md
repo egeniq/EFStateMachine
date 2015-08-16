@@ -1,6 +1,10 @@
 EFStateMachine.swift
 ====================
 
+[![Language: Swift](https://img.shields.io/badge/lang-Swift-orange.svg?style=flat)](https://developer.apple.com/swift/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://raw.githubusercontent.com/Egeniq/EFStateMachine/master/LICENSE)
+[![CocoaPods](https://img.shields.io/cocoapods/v/EFStateMachine.svg?style=flat)](http://cocoapods.org)
+
 __A Simple State Machine__
 
 This state machine is typically setup with an enum for its possible states, and an enum for its actions. The state
