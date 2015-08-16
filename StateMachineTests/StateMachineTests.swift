@@ -24,19 +24,19 @@ class StateMachineTests: XCTestCase {
     private func setupLoadMachine() -> StateMachine<LoadState, LoadAction> {
         let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty, maxHistoryLength: 3)
 
-        machine.registerAction(.Load, fromStates: [.Empty, .Failed]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
             return .Loading
         }
 
-        machine.registerAction(.FinishLoading, fromStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete]) { (machine) -> StateMachineTests.LoadState in
             return .Complete
         }
 
-        machine.registerAction(.Cancel, fromStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: nil) { (machine) -> StateMachineTests.LoadState in
             return machine.history[machine.history.count - 2]
         }
 
-        machine.registerAction(.Reset, fromStates: [.Complete, .Failed]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Reset, fromStates: [.Complete, .Failed], toStates: [.Empty]) { (machine) -> StateMachineTests.LoadState in
             return .Empty
         }
 

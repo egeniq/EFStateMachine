@@ -27,11 +27,11 @@ Sample code:
 
     let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
 
-    machine.registerAction(.Load, fromStates: [.Start, .Failed]) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> StateMachineTests.LoadState in
         return .Loading
     }
 
-    machine.registerAction(.FinishLoading, fromStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> StateMachineTests.LoadState in
         return .Complete // (or return .Failed if that's the case)
     }
 
@@ -42,5 +42,14 @@ Sample code:
     machine.onChange(toStates: [.Complete]) { [unowned self] (machine, oldState, newState) -> Void in
         self.infoLabel.text = "Complete!"
     }
+
+    // Start loading
+    machine.performAction(.Load) // returns .Loading
+
+    // Loading finished
+    machine.performAction(.FinishLoading) // returns .Complete and updates infoLabel to "Complete!"
+
+    // Try loading again (an invalid action)
+    machine.performAction(.Load) // returns nil
 	
 

@@ -29,11 +29,11 @@ Sample code:
 
     let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
 
-    machine.registerAction(.Load, fromStates: [.Start, .Failed]) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> StateMachineTests.LoadState in
         return .Loading
     }
 
-    machine.registerAction(.FinishLoading, fromStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> StateMachineTests.LoadState in
         return .Complete // (or return .Failed if that's the case)
     }
 
@@ -113,7 +113,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
         }
     }
 
-    private var actions: [A: (Set<S>, ActionHandler)] = [:]
+    private var actions: [A: (Set<S>?, Set<S>?, ActionHandler)] = [:]
 
     /** Registers an action
 
@@ -128,11 +128,12 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     or `[unowned self]` for the handler.
 
     - parameter action: The action name
-    - parameter fromStates: One or more states from which the action can be performed
+    - parameter fromStates: One or more states from which the action can be performed, nil if any state is acceptable
+    - parameter toStates: The states that the action handler may return, nil if any state is acceptable
     - parameter actionHandler: The handler to run when performing the action
     */
-    func registerAction(action: A, fromStates: Set<S>, actionHandler: ActionHandler) {
-        actions[action] = (fromStates, actionHandler)
+    func registerAction(action: A, fromStates: Set<S>?, toStates: Set<S>?, actionHandler: ActionHandler) {
+        actions[action] = (fromStates, toStates, actionHandler)
     }
 
     /** Performs a registered action
@@ -143,10 +144,15 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     - returns: Returns the new state if the action was run, or nil if the action not run
     */
     func performAction(action: A) -> S? {
-        if let actionTuple = actions[action] {
-            if actionTuple.0.contains(state) {
-                state = actionTuple.1(machine: self)
-                return state
+        if let (fromStates, toStates, actionHandler) = actions[action] {
+            if (fromStates == nil || fromStates?.contains(state) == true) {
+                let newState = actionHandler(machine: self)
+                if (toStates == nil || toStates?.contains(newState) == true) {
+                    state = newState
+                    return state
+                } else {
+                    fatalError("The action handler for \"\(action)\" returned the state \"\(newState)\" but the state machine expects one of these states: \(toStates!)")
+                }
             }
         }
         return nil
