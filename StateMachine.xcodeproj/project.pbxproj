@@ -26,6 +26,7 @@
 /* Begin PBXFileReference section */
 		C76FF06F1B8079400095F345 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		C76FF0701B8079400095F345 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
+		C76FF0711B8080580095F345 /* EFStateMachine.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = EFStateMachine.podspec; sourceTree = SOURCE_ROOT; };
 		C7D751021B7ED7C900EB7571 /* StateMachine.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = StateMachine.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7D751051B7ED7C900EB7571 /* StateMachine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StateMachine.h; sourceTree = "<group>"; };
 		C7D751071B7ED7C900EB7571 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -77,6 +78,7 @@
 			children = (
 				C76FF06F1B8079400095F345 /* LICENSE */,
 				C76FF0701B8079400095F345 /* README.md */,
+				C76FF0711B8080580095F345 /* EFStateMachine.podspec */,
 				C7D751051B7ED7C900EB7571 /* StateMachine.h */,
 				C7D7511C1B7ED87500EB7571 /* StateMachine.swift */,
 				C7D751071B7ED7C900EB7571 /* Info.plist */,

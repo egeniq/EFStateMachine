@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.author             = { "Johan Kool" => "johan@koolistov.net" }
   s.ios.deployment_target = "8.0"
   s.osx.deployment_target = "10.9"
-  s.source       = { :git => "https://github.com/Egeniq/EFStateMachine.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/Egeniq/EFStateMachine.git", :tag => "v#{s.version}" }
   s.source_files = "StateMachine/*.swift"
 end
