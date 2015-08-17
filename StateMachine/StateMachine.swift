@@ -150,9 +150,9 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
                 if (toStates == nil || toStates?.contains(newState) == true) {
                     state = newState
                     return state
-                } else {
-                    fatalError("The action handler for \"\(action)\" returned the state \"\(newState)\" but the state machine expects one of these states: \(toStates!)")
                 }
+                print("WARNING: The action handler for \"\(action)\" returned the state \"\(newState)\" but the state machine expects one of these states: \(toStates!). State kept at \"\(state)\".")
+                return nil
             }
         }
         return nil

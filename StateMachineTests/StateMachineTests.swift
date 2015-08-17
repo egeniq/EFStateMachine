@@ -16,13 +16,13 @@ class StateMachineTests: XCTestCase {
     }
 
     private enum LoadAction {
-        case Load, FinishLoading, LoadMore, Cancel, Reset
+        case Load, FinishLoading, LoadMore, Cancel, Reset, Mystery
     }
 
     private var loadMachine: StateMachine<LoadState, LoadAction>!
 
-    private func setupLoadMachine() -> StateMachine<LoadState, LoadAction> {
-        let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty, maxHistoryLength: 3)
+    private func setupLoadMachine(length: UInt = 3) -> StateMachine<LoadState, LoadAction> {
+        let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty, maxHistoryLength: length)
 
         machine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
             return .Loading
@@ -128,6 +128,34 @@ class StateMachineTests: XCTestCase {
         loadMachine.performAction(.Load)
         loadMachine.performAction(.FinishLoading)
         XCTAssertEqual(loadMachine.history.count, 3)
+    }
+
+    func testZeroLenghtHistoryMachine() {
+        let zeroMachine = setupLoadMachine(0)
+
+        XCTAssertEqual(zeroMachine.history.count, 0)
+        zeroMachine.performAction(.Load)
+        zeroMachine.performAction(.FinishLoading)
+        XCTAssertEqual(zeroMachine.history.count, 0)
+
+        zeroMachine.performAction(.Reset)
+        XCTAssertEqual(zeroMachine.history.count, 0)
+
+        zeroMachine.performAction(.Load)
+        zeroMachine.performAction(.FinishLoading)
+        XCTAssertEqual(zeroMachine.history.count, 0)
+    }
+
+    func testInvalidStateReturned() {
+        loadMachine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+            return .Failed
+        }
+
+        XCTAssertEqual(loadMachine.performAction(.Load), nil)
+    }
+
+    func testUnregisteredAction() {
+        XCTAssertEqual(loadMachine.performAction(.Mystery), nil)
     }
 
 }
