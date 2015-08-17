@@ -35,7 +35,7 @@ Sample code:
         return .Complete // (or return .Failed if that's the case)
     }
 
-    machine.registerAction(.Cancel, fromStates: [.Loading]) { machine in
+    machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Start, .Failed]) { machine in
         return machine.history[machine.history.count - 2]
     }
 
