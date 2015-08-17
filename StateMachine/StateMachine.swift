@@ -62,7 +62,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     - parameter machine: The machine running the handler
     - returns: The new state of the machine on completion of the handler
     */
-    typealias ActionHandler = (machine: StateMachine<S, A>) -> S
+    public typealias ActionHandler = (machine: StateMachine<S, A>) -> S
 
     /** An state changed handler
 
@@ -70,13 +70,13 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     - parameter oldState: The previous state of the machine
     - parameter newState: The current state of the machine
     */
-    typealias ChangeHandler = (machine: StateMachine<S, A>, oldState: S, newState: S) -> Void
+    public typealias ChangeHandler = (machine: StateMachine<S, A>, oldState: S, newState: S) -> Void
 
     /// The initial state of the machine
-    private (set) var initialState: S
+    public private (set) var initialState: S
 
     /// The current state of the machine
-    private (set) var state: S {
+    public private (set) var state: S {
         didSet(oldValue) {
             history.append(state)
             if UInt(history.count) == maxHistoryLength + 1 {
@@ -91,10 +91,10 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     }
 
     /// A history of states the machine has been in from oldest to newest
-    private (set) var history: [S]
+    public private (set) var history: [S]
 
     /// The maximum lenght of the history before it gets pruned
-    private (set) var maxHistoryLength: UInt
+    public private (set) var maxHistoryLength: UInt
 
     /** Create a new state machine
 
@@ -102,7 +102,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     - parameter maxHistoryLenght: The maximum lenght of the history before it gets pruned
     - returns: A state machine
     */
-    init(initialState: S, maxHistoryLength: UInt = 10) {
+    public init(initialState: S, maxHistoryLength: UInt = 10) {
         self.initialState = initialState
         self.state = initialState
         self.maxHistoryLength = maxHistoryLength
@@ -132,7 +132,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     - parameter toStates: The states that the action handler may return, nil if any state is acceptable
     - parameter actionHandler: The handler to run when performing the action
     */
-    func registerAction(action: A, fromStates: Set<S>?, toStates: Set<S>?, actionHandler: ActionHandler) {
+    public func registerAction(action: A, fromStates: Set<S>?, toStates: Set<S>?, actionHandler: ActionHandler) {
         actions[action] = (fromStates, toStates, actionHandler)
     }
 
@@ -143,7 +143,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     - parameter action: The action to perform
     - returns: Returns the new state if the action was run, or nil if the action not run
     */
-    func performAction(action: A) -> S? {
+    public func performAction(action: A) -> S? {
         if let (fromStates, toStates, actionHandler) = actions[action] {
             if (fromStates == nil || fromStates?.contains(state) == true) {
                 let newState = actionHandler(machine: self)
@@ -173,7 +173,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     - parameter toStates: The handler is only run if the new state is in this set. If nil, any state is acceptable.
     - parameter changeHandler: The handler to run
     */
-    func onChange(fromStates fromStates: Set<S>? = nil, toStates: Set<S>? = nil, changeHandler: ChangeHandler) {
+    public func onChange(fromStates fromStates: Set<S>? = nil, toStates: Set<S>? = nil, changeHandler: ChangeHandler) {
         changes.append((fromStates, toStates, changeHandler))
     }
     
