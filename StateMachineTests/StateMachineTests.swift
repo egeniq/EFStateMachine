@@ -11,12 +11,20 @@ import XCTest
 
 class StateMachineTests: XCTestCase {
 
-    private enum LoadState {
+    private enum LoadState: String, CustomStringConvertible {
         case Empty, Loading, Partial, Complete, Failed
+
+        var description: String {
+            return rawValue
+        }
     }
 
-    private enum LoadAction {
+    private enum LoadAction: String, CustomStringConvertible {
         case Load, FinishLoading, LoadMore, Cancel, Reset, Mystery
+
+        var description: String {
+            return rawValue
+        }
     }
 
     private var loadMachine: StateMachine<LoadState, LoadAction>!
@@ -24,15 +32,15 @@ class StateMachineTests: XCTestCase {
     private func setupLoadMachine(length: UInt = 3) -> StateMachine<LoadState, LoadAction> {
         let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty, maxHistoryLength: length)
 
-        machine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Load, fromStates: [.Empty], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
             return .Loading
         }
 
-        machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> StateMachineTests.LoadState in
             return .Complete
         }
 
-        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: nil) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Empty]) { (machine) -> StateMachineTests.LoadState in
             return machine.history[machine.history.count - 2]
         }
 
@@ -158,4 +166,10 @@ class StateMachineTests: XCTestCase {
         XCTAssertEqual(loadMachine.performAction(.Mystery), nil)
     }
 
+
+    func testFlowdiagram() {
+        let diagram = loadMachine.flowdiagramRepresentation
+        XCTAssertEqual(diagram, "digraph {\n    graph [rankdir=TB]\n    \n    0 [label=\"\", shape=plaintext]\n    0 -> 1\n    \n    # node\n    1 [label=\"Empty\", shape=box]\n    2 [label=\"Complete\", shape=box]\n    3 [label=\"Reset\", shape=oval]\n    4 [label=\"Failed\", shape=box]\n    5 [label=\"Loading\", shape=box]\n    6 [label=\"Load\", shape=oval]\n    7 [label=\"FinishLoading\", shape=oval]\n    8 [label=\"Cancel\", shape=oval]\n\n    \n    # links\n    2 -> 3 [arrowhead=none]\n    3 -> 1\n    4 -> 3 [arrowhead=none]\n    1 -> 6 [arrowhead=none]\n    6 -> 5\n    5 -> 7 [arrowhead=none]\n    7 -> 2\n    7 -> 4\n    5 -> 8 [arrowhead=none]\n    8 -> 1\n\n}")
+
+    }
 }

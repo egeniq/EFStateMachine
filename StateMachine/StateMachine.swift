@@ -55,7 +55,7 @@ Sample code:
     machine.performAction(.Load) // returns nil
 
 */
-public class StateMachine<S, A where S: Hashable, A: Hashable> {
+public class StateMachine<S, A where S: Hashable, A: Hashable, S: CustomStringConvertible, A: CustomStringConvertible> {
 
     /** An action handler
 
@@ -113,7 +113,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
         }
     }
 
-    private var actions: [A: (Set<S>?, Set<S>?, ActionHandler)] = [:]
+    private var actions: [A: (Set<S>, Set<S>, ActionHandler)] = [:]
 
     /** Registers an action
 
@@ -128,11 +128,11 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     or `[unowned self]` for the handler.
 
     - parameter action: The action name
-    - parameter fromStates: One or more states from which the action can be performed, nil if any state is acceptable
-    - parameter toStates: The states that the action handler may return, nil if any state is acceptable
+    - parameter fromStates: One or more states from which the action can be performed
+    - parameter toStates: The states that the action handler may return
     - parameter actionHandler: The handler to run when performing the action
     */
-    public func registerAction(action: A, fromStates: Set<S>?, toStates: Set<S>?, actionHandler: ActionHandler) {
+    public func registerAction(action: A, fromStates: Set<S>, toStates: Set<S>, actionHandler: ActionHandler) {
         actions[action] = (fromStates, toStates, actionHandler)
     }
 
@@ -145,13 +145,13 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     */
     public func performAction(action: A) -> S? {
         if let (fromStates, toStates, actionHandler) = actions[action] {
-            if (fromStates == nil || fromStates?.contains(state) == true) {
+            if fromStates.contains(state) {
                 let newState = actionHandler(machine: self)
-                if (toStates == nil || toStates?.contains(newState) == true) {
+                if toStates.contains(newState) {
                     state = newState
                     return state
                 }
-                print("WARNING: The action handler for \"\(action)\" returned the state \"\(newState)\" but the state machine expects one of these states: \(toStates!). State kept at \"\(state)\".")
+                print("WARNING: The action handler for \"\(action)\" returned the state \"\(newState)\" but the state machine expects one of these states: \(toStates). State kept at \"\(state)\".")
                 return nil
             }
         }
@@ -178,3 +178,103 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     }
     
 }
+
+extension StateMachine {
+
+    var flowdiagramRepresentation: String {
+        let representation = Flowdiagram(machine: self)
+        return representation.description
+    }
+
+}
+
+class Flowdiagram<S, A where S: Hashable, A: Hashable, S: CustomStringConvertible, A: CustomStringConvertible>: CustomStringConvertible {
+
+    let machine:  StateMachine<S, A>
+
+    init(machine: StateMachine<S, A>) {
+        self.machine = machine
+    }
+
+    var description: String {
+        nodes = []
+        links = []
+
+        let a = machine.initialState
+        addState(a)
+
+        for (action, (fromStates, toStates, _)) in machine.actions {
+            fromStates.forEach() { fromState in
+                let fromStateIndex = addState(fromState)
+                toStates.forEach() { toState in
+                    let toStateIndex = addState(toState)
+                    addAction(action, fromIndex: fromStateIndex, toIndex: toStateIndex)
+                }
+            }
+        }
+
+        let nodesStr = "".join(nodes.map() { (index: Int, state: S?, action: A?) in
+            if let state = state {
+                return "    \(index) [label=\"\(state)\", shape=box]\n"
+            } else if let action = action {
+                return "    \(index) [label=\"\(action)\", shape=oval]\n"
+            }
+            return "    \n"
+        })
+
+        let linksStr = "".join(links.map() { (from: Int, to: Int, hasArrow: Bool) in
+            if hasArrow {
+                return "    \(from) -> \(to)\n"
+            } else {
+                return "    \(from) -> \(to) [arrowhead=none]\n"
+            }
+        })
+
+        return "digraph {\n    graph [rankdir=TB]\n    \n    0 [label=\"\", shape=plaintext]\n    0 -> 1\n    \n    # node\n\(nodesStr)\n    \n    # links\n\(linksStr)\n}"
+    }
+
+    private var nodes: [(Int, S?, A?)] = []
+    private var links: [(Int, Int, Bool)] = []
+
+    private func addState(state: S) -> Int {
+        let filtered = nodes.filter() { (index: Int, aState: S?, action: A?) in
+            return aState == nil ? false : state == aState!
+            }
+        if let (index, _, _) = filtered.first {
+            return index
+        } else {
+            let index = nodes.count + 1
+            nodes.append((index, state, nil))
+            return index
+        }
+    }
+
+    private func addAction(action: A) -> Int {
+        let filtered = nodes.filter() { (index: Int, aState: S?, anAction: A?) in
+            return anAction == nil ? false : action == anAction!
+        }
+        if let (index, _, _) = filtered.first {
+            return index
+        } else {
+            let index = nodes.count + 1
+            nodes.append((index, nil, action))
+            return index
+        }
+    }
+
+    private func addAction(action: A, fromIndex: Int, toIndex: Int) {
+        let actionIndex = addAction(action)
+        addLink(fromIndex: fromIndex, toIndex: actionIndex, hasArrow: false)
+        addLink(fromIndex: actionIndex, toIndex: toIndex, hasArrow: true)
+    }
+
+    private func addLink(fromIndex fromIndex: Int, toIndex: Int, hasArrow: Bool) {
+        if !links.contains({ (from: Int, to: Int, arrow: Bool) in
+            return from == fromIndex && to == toIndex && arrow == hasArrow
+        }) {
+            links.append((fromIndex, toIndex, hasArrow))
+        }
+    }
+
+}
+
