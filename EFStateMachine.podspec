@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "EFStateMachine"
-  s.version      = "0.1.3"
+  s.version      = "0.1.4"
   s.summary      = "A Simple State Machine in Swift."
   s.description  = <<-DESC
   This state machine is typically setup with an enum for its possible states, and an enum for its actions. The state
