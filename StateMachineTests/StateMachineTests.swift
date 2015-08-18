@@ -178,7 +178,10 @@ class StateMachineTests: XCTestCase {
 
     func testSampleCode() {
         enum LoadState: String, Printable {
-            case Empty = "Empty", Loading = "Loading", Complete = "Complete", Failed = "Failed"
+            case Empty = "Empty"
+            case Loading = "Loading"
+            case Complete = "Complete"
+            case Failed = "Failed"
 
             var description: String {
                 return rawValue
@@ -186,14 +189,17 @@ class StateMachineTests: XCTestCase {
         }
 
         enum LoadAction: String, Printable {
-            case Load = "Load", FinishLoading = "FinishLoading", Cancel = "Cancel", Reset = "Reset"
+            case Load = "Load"
+            case FinishLoading = "FinishLoading"
+            case Cancel = "Cancel"
+            case Reset = "Reset"
 
             var description: String {
                 return rawValue
             }
         }
 
-        let machine = StateMachine<LoadState2, LoadAction2>(initialState: .Empty)
+        let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty)
 
         machine.registerAction(.Load, fromStates: [.Empty], toStates: [.Loading]) { (machine) -> LoadState in
             return .Loading

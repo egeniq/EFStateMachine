@@ -54,7 +54,10 @@ First, create an `enum` to hold the states. It should conform to the protocols `
 
 ```swift
 enum LoadState: String, Printable {
-    case Empty = "Empty", Loading = "Loading", Complete = "Complete", Failed = "Failed"
+    case Empty = "Empty"
+    case Loading = "Loading"
+    case Complete = "Complete"
+    case Failed = "Failed"
 
     var description: String {
         return rawValue
@@ -66,7 +69,10 @@ The `enum` for the actions is declared the same way.
 
 ```swift
 enum LoadAction: String, Printable {
-    case Load = "Load", FinishLoading = "FinishLoading", Cancel = "Cancel", Reset = "Reset"
+    case Load = "Load"
+    case FinishLoading = "FinishLoading"
+    case Cancel = "Cancel"
+    case Reset = "Reset"
 
     var description: String {
         return rawValue
@@ -77,13 +83,13 @@ enum LoadAction: String, Printable {
 Now that we have both the states and actions declared, we can create the machine and give it its initial state.
 
 ```swift
-let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
+let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty)
 ```
 
 For each action, register a handler to run. The handler will only be run if the current state of the state machine is one of those listed in `fromStates`. The handler must return a state, which will become the new state of the state machine.
 
 ```swift
-machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> LoadState in
+machine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading) { (machine) -> LoadState in
     return .Loading
 }
 
@@ -99,7 +105,7 @@ machine.registerAction(.Reset, fromStates: [.Complete, .Failed], toStates: [.Emp
 Because the state machine keeps track of its state history, you can implement methods to handle cancelling an asynchronous task.
 
 ```swift
-machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Start, .Failed]) { (machine) -> LoadState in
+machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Empty, .Failed]) { (machine) -> LoadState in
     return machine.history[machine.history.count - 2]
 }
 ```
@@ -134,7 +140,7 @@ let flowdiagram = machine.flowdiagramRepresentation
 flowdiagram.writeToFile("/path/to/example-flow-diagram.dot", atomically: true, encoding: NSUTF8StringEncoding, error: nil)
 ```
 
-This creates file containing:
+This creates a file containing:
 
 ```dot
 digraph {
