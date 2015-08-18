@@ -11,7 +11,7 @@ import StateMachine
 
 class StateMachineTests: XCTestCase {
 
-    private enum LoadState: String, Printable {
+    private enum TestLoadState: String, Printable {
         case Empty = "Empty", Loading = "Loading", Partial = "Partial", Complete = "Complete", Failed = "Failed"
 
         var description: String {
@@ -19,7 +19,7 @@ class StateMachineTests: XCTestCase {
         }
     }
 
-    private enum LoadAction: String, Printable {
+    private enum TestLoadAction: String, Printable {
         case Load = "Load", FinishLoading = "FinishLoading", LoadMore = "LoadMore", Cancel = "Cancel", Reset = "Reset", Mystery = "Mystery"
 
         var description: String {
@@ -27,49 +27,49 @@ class StateMachineTests: XCTestCase {
         }
     }
 
-    private var loadMachine: StateMachine<LoadState, LoadAction>!
+    private var loadMachine: StateMachine<TestLoadState, TestLoadAction>!
 
-    private func setupLoadMachine(length: UInt = 3) -> StateMachine<LoadState, LoadAction> {
-        let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty, maxHistoryLength: length)
+    private func setupLoadMachine(length: UInt = 3) -> StateMachine<TestLoadState, TestLoadAction> {
+        let machine = StateMachine<TestLoadState, TestLoadAction>(initialState: .Empty, maxHistoryLength: length)
 
-        machine.registerAction(.Load, fromStates: [.Empty], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Load, fromStates: [.Empty], toStates: [.Loading]) { (machine) -> StateMachineTests.TestLoadState in
             return .Loading
         }
 
-        machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> StateMachineTests.TestLoadState in
             return .Complete
         }
 
-        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Empty]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Empty]) { (machine) -> StateMachineTests.TestLoadState in
             return machine.history[machine.history.count - 2]
         }
 
-        machine.registerAction(.Reset, fromStates: [.Complete, .Failed], toStates: [.Empty]) { (machine) -> StateMachineTests.LoadState in
+        machine.registerAction(.Reset, fromStates: [.Complete, .Failed], toStates: [.Empty]) { (machine) -> StateMachineTests.TestLoadState in
             return .Empty
         }
 
         // #1
         machine.onChange { [weak self] (machine, oldState, newState) -> Void in
-            let callback: (Int, StateMachine<LoadState, LoadAction>, LoadState, LoadState) = (1, machine, oldState, newState)
+            let callback: (Int, StateMachine<TestLoadState, TestLoadAction>, TestLoadState, TestLoadState) = (1, machine, oldState, newState)
             self?.recordedCallBacks.append(callback)
         }
 
         // #2
         machine.onChange(fromStates: [.Loading]) { [weak self] (machine, oldState, newState) -> Void in
-            let callback: (Int, StateMachine<LoadState, LoadAction>, LoadState, LoadState) = (2, machine, oldState, newState)
+            let callback: (Int, StateMachine<TestLoadState, TestLoadAction>, TestLoadState, TestLoadState) = (2, machine, oldState, newState)
             self?.recordedCallBacks.append(callback)
         }
 
         // #3
         machine.onChange(toStates: [.Complete]) { [weak self] (machine, oldState, newState) -> Void in
-            let callback: (Int, StateMachine<LoadState, LoadAction>, LoadState, LoadState) = (3, machine, oldState, newState)
+            let callback: (Int, StateMachine<TestLoadState, TestLoadAction>, TestLoadState, TestLoadState) = (3, machine, oldState, newState)
             self?.recordedCallBacks.append(callback)
         }
 
         return machine
     }
 
-    private var recordedCallBacks: [(Int, StateMachine<LoadState, LoadAction>, LoadState, LoadState)] = []
+    private var recordedCallBacks: [(Int, StateMachine<TestLoadState, TestLoadAction>, TestLoadState, TestLoadState)] = []
 
     override func setUp() {
         super.setUp()
@@ -88,16 +88,16 @@ class StateMachineTests: XCTestCase {
     }
 
     func testInitialState() {
-        XCTAssertEqual(loadMachine.state, LoadState.Empty)
+        XCTAssertEqual(loadMachine.state, TestLoadState.Empty)
     }
 
     func testValidStateChange() {
         // Check returned state
         let state = loadMachine.performAction(.Load)
-        XCTAssertTrue(state == LoadState.Loading)
+        XCTAssertTrue(state == TestLoadState.Loading)
 
         // Check reported state
-        XCTAssertEqual(loadMachine.state, LoadState.Loading)
+        XCTAssertEqual(loadMachine.state, TestLoadState.Loading)
     }
 
     func testInvalidStateChange() {
@@ -106,7 +106,7 @@ class StateMachineTests: XCTestCase {
         XCTAssertTrue(state == nil)
 
         // Check reported state
-        XCTAssertEqual(loadMachine.state, LoadState.Empty)
+        XCTAssertEqual(loadMachine.state, TestLoadState.Empty)
     }
 
     func testOnChangeCallbacks() {
@@ -158,7 +158,7 @@ class StateMachineTests: XCTestCase {
     }
 
     func testInvalidStateReturned() {
-        loadMachine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
+        loadMachine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.TestLoadState in
             return .Failed
         }
 
@@ -174,5 +174,53 @@ class StateMachineTests: XCTestCase {
         let diagram = loadMachine.flowdiagramRepresentation
         XCTAssertEqual(diagram, "digraph {\n    graph [rankdir=TB]\n    \n    0 [label=\"\", shape=plaintext]\n    0 -> 1\n    \n    # node\n    1 [label=\"Empty\", shape=box]\n    2 [label=\"Complete\", shape=box]\n    3 [label=\"Reset\", shape=oval]\n    4 [label=\"Failed\", shape=box]\n    5 [label=\"Loading\", shape=box]\n    6 [label=\"Load\", shape=oval]\n    7 [label=\"FinishLoading\", shape=oval]\n    8 [label=\"Cancel\", shape=oval]\n\n    \n    # links\n    2 -> 3 [arrowhead=none]\n    3 -> 1\n    4 -> 3 [arrowhead=none]\n    1 -> 6 [arrowhead=none]\n    6 -> 5\n    5 -> 7 [arrowhead=none]\n    7 -> 2\n    7 -> 4\n    5 -> 8 [arrowhead=none]\n    8 -> 1\n\n}")
 
+    }
+
+    func testSampleCode() {
+        enum LoadState: String, Printable {
+            case Empty = "Empty", Loading = "Loading", Complete = "Complete", Failed = "Failed"
+
+            var description: String {
+                return rawValue
+            }
+        }
+
+        enum LoadAction: String, Printable {
+            case Load = "Load", FinishLoading = "FinishLoading", Cancel = "Cancel", Reset = "Reset"
+
+            var description: String {
+                return rawValue
+            }
+        }
+
+        let machine = StateMachine<LoadState2, LoadAction2>(initialState: .Empty)
+
+        machine.registerAction(.Load, fromStates: [.Empty], toStates: [.Loading]) { (machine) -> LoadState in
+            return .Loading
+        }
+
+        machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> LoadState in
+            return .Complete
+        }
+
+        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Empty]) { (machine) -> LoadState in
+            return machine.history[machine.history.count - 2]
+        }
+        
+        machine.registerAction(.Reset, fromStates: [.Complete, .Failed], toStates: [.Empty]) { (machine) -> LoadState in
+            return .Empty
+        }
+
+        // Start loading
+        machine.performAction(.Load) // returns .Loading
+
+        // Loading finished
+        machine.performAction(.FinishLoading) // returns .Complete and updates infoLabel to "Complete!"
+
+        // Try loading again (an invalid action)
+        machine.performAction(.Load) // returns nil
+
+        let flowdiagram = machine.flowdiagramRepresentation
+        // flowdiagram.writeToFile("/path/to/example-flow-diagram.dot", atomically: true, encoding: NSUTF8StringEncoding, error: nil)
     }
 }

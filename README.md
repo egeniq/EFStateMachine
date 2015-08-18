@@ -53,78 +53,118 @@ Say you want to state machine to capture the flow in this diagram:
 First, create an `enum` to hold the states. It should conform to the protocols `Hashable` and `Printable`.
 
 ```swift
-    enum LoadState: String, Printable {
-        case Empty = "Empty", Loading = "Loading", Complete = "Complete", Failed = "Failed"
+enum LoadState: String, Printable {
+    case Empty = "Empty", Loading = "Loading", Complete = "Complete", Failed = "Failed"
 
-        var description: String {
-            return rawValue
-        }
+    var description: String {
+        return rawValue
     }
+}
 ```
 
 The `enum` for the actions is declared the same way.
 
 ```swift
-    enum LoadAction: String, Printable {
-        case Load = "Load", FinishLoading = "FinishLoading", Cancel = "Cancel", Reset = "Reset"
+enum LoadAction: String, Printable {
+    case Load = "Load", FinishLoading = "FinishLoading", Cancel = "Cancel", Reset = "Reset"
 
-        var description: String {
-            return rawValue
-        }
+    var description: String {
+        return rawValue
     }
+}
 ```
 
 Now that we have both the states and actions declared, we can create the machine and give it its initial state.
 
 ```swift
-    let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
+let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
 ```
 
 For each action, register a handler to run. The handler will only be run if the current state of the state machine is one of those listed in `fromStates`. The handler must return a state, which will become the new state of the state machine.
 
 ```swift
-    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> StateMachineTests.LoadState in
-        return .Loading
-    }
+machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> LoadState in
+    return .Loading
+}
 
-    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> StateMachineTests.LoadState in
-        return .Complete // (or return .Failed if that's the case)
-    }
+machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> LoadState in
+    return .Complete // (or return .Failed if that's the case)
+}
+
+machine.registerAction(.Reset, fromStates: [.Complete, .Failed], toStates: [.Empty]) { (machine) -> LoadState in
+    return .Empty
+}
 ```
 
 Because the state machine keeps track of its state history, you can implement methods to handle cancelling an asynchronous task.
 
 ```swift
-    machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Start, .Failed]) { machine in
-        return machine.history[machine.history.count - 2]
-    }
+machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Start, .Failed]) { (machine) -> LoadState in
+    return machine.history[machine.history.count - 2]
+}
 ```
 
 You can also observe state changes and act upon such events. This is also a good moment to point out that you should be careful not to introduce retain loops. If `self` holds the state machine, you should use `[unowned self` or `[weak self]` with your handler.
 
 ```swift
-    machine.onChange(toStates: [.Complete]) { [unowned self] (machine, oldState, newState) -> Void in
-        self.infoLabel.text = "Complete!"
-    }
+machine.onChange(toStates: [.Complete]) { [unowned self] (machine, oldState, newState) -> Void in
+    self.infoLabel.text = "Complete!"
+}
 ```
 
 Now your state machine is ready to be used. Performing an action is straightforward. If you get back a state, you know the action was run, if `nil` is returned the action was ignored.
 
 ```swift
-    // Start loading
-    machine.performAction(.Load) // returns .Loading
+// Start loading
+machine.performAction(.Load) // returns .Loading
 
-    // Loading finished
-    machine.performAction(.FinishLoading) // returns .Complete and updates infoLabel to "Complete!"
+// Loading finished
+machine.performAction(.FinishLoading) // returns .Complete and updates infoLabel to "Complete!"
 
-    // Try loading again (an invalid action)
-    machine.performAction(.Load) // returns nil
+// Try loading again (an invalid action)
+machine.performAction(.Load) // returns nil
 ```	
 
 ## Flow diagram
 
-To get a flow diagram like shown above, you save the string returned by the `flowdiagramRepresentation` property to a .dot file. You can render the diagram with the free app [GraphViz](http://graphviz.org).
+To get a flow diagram like shown above, you save the string returned by the `flowdiagramRepresentation` property to a dot file. You can render the diagram with the free app [GraphViz](http://graphviz.org).
 
 ```swift
-    let flowdiagram = machine.flowdiagramRepresentation
+let flowdiagram = machine.flowdiagramRepresentation
+flowdiagram.writeToFile("/path/to/example-flow-diagram.dot", atomically: true, encoding: NSUTF8StringEncoding, error: nil)
+```
+
+This creates file containing:
+
+```dot
+digraph {
+    graph [rankdir=TB]
+    
+    0 [label="", shape=plaintext]
+    0 -> 1
+    
+    # node
+    1 [label="Empty", shape=box]
+    2 [label="Loading", shape=box]
+    3 [label="Cancel", shape=oval]
+    4 [label="Load", shape=oval]
+    5 [label="Complete", shape=box]
+    6 [label="FinishLoading", shape=oval]
+    7 [label="Failed", shape=box]
+    8 [label="Reset", shape=oval]
+
+    
+    # links
+    2 -> 3 [arrowhead=none]
+    3 -> 1
+    1 -> 4 [arrowhead=none]
+    4 -> 2
+    2 -> 6 [arrowhead=none]
+    6 -> 5
+    6 -> 7
+    5 -> 8 [arrowhead=none]
+    8 -> 1
+    7 -> 8 [arrowhead=none]
+
+}
 ```
