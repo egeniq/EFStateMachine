@@ -7,20 +7,20 @@
 //
 
 import XCTest
-@testable import StateMachine
+import StateMachine
 
 class StateMachineTests: XCTestCase {
 
-    private enum LoadState: String, CustomStringConvertible {
-        case Empty, Loading, Partial, Complete, Failed
+    private enum LoadState: String, Printable {
+        case Empty = "Empty", Loading = "Loading", Partial = "Partial", Complete = "Complete", Failed = "Failed"
 
         var description: String {
             return rawValue
         }
     }
 
-    private enum LoadAction: String, CustomStringConvertible {
-        case Load, FinishLoading, LoadMore, Cancel, Reset, Mystery
+    private enum LoadAction: String, Printable {
+        case Load = "Load", FinishLoading = "FinishLoading", LoadMore = "LoadMore", Cancel = "Cancel", Reset = "Reset", Mystery = "Mystery"
 
         var description: String {
             return rawValue
@@ -50,17 +50,20 @@ class StateMachineTests: XCTestCase {
 
         // #1
         machine.onChange { [weak self] (machine, oldState, newState) -> Void in
-            self?.recordedCallBacks.append((1, machine, oldState, newState))
+            let callback: (Int, StateMachine<LoadState, LoadAction>, LoadState, LoadState) = (1, machine, oldState, newState)
+            self?.recordedCallBacks.append(callback)
         }
 
         // #2
         machine.onChange(fromStates: [.Loading]) { [weak self] (machine, oldState, newState) -> Void in
-            self?.recordedCallBacks.append((2, machine, oldState, newState))
+            let callback: (Int, StateMachine<LoadState, LoadAction>, LoadState, LoadState) = (2, machine, oldState, newState)
+            self?.recordedCallBacks.append(callback)
         }
 
         // #3
         machine.onChange(toStates: [.Complete]) { [weak self] (machine, oldState, newState) -> Void in
-            self?.recordedCallBacks.append((3, machine, oldState, newState))
+            let callback: (Int, StateMachine<LoadState, LoadAction>, LoadState, LoadState) = (3, machine, oldState, newState)
+            self?.recordedCallBacks.append(callback)
         }
 
         return machine
@@ -91,7 +94,7 @@ class StateMachineTests: XCTestCase {
     func testValidStateChange() {
         // Check returned state
         let state = loadMachine.performAction(.Load)
-        XCTAssertEqual(state, LoadState.Loading)
+        XCTAssertTrue(state == LoadState.Loading)
 
         // Check reported state
         XCTAssertEqual(loadMachine.state, LoadState.Loading)
@@ -100,7 +103,7 @@ class StateMachineTests: XCTestCase {
     func testInvalidStateChange() {
         // Check returned state
         let state = loadMachine.performAction(.FinishLoading)
-        XCTAssertEqual(state, nil)
+        XCTAssertTrue(state == nil)
 
         // Check reported state
         XCTAssertEqual(loadMachine.state, LoadState.Empty)
@@ -139,7 +142,7 @@ class StateMachineTests: XCTestCase {
     }
 
     func testZeroLenghtHistoryMachine() {
-        let zeroMachine = setupLoadMachine(0)
+        let zeroMachine = setupLoadMachine(length: 0)
 
         XCTAssertEqual(zeroMachine.history.count, 0)
         zeroMachine.performAction(.Load)
@@ -159,11 +162,11 @@ class StateMachineTests: XCTestCase {
             return .Failed
         }
 
-        XCTAssertEqual(loadMachine.performAction(.Load), nil)
+        XCTAssertTrue(loadMachine.performAction(.Load) == nil)
     }
 
     func testUnregisteredAction() {
-        XCTAssertEqual(loadMachine.performAction(.Mystery), nil)
+        XCTAssertTrue(loadMachine.performAction(.Mystery) == nil)
     }
 
 
