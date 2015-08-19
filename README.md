@@ -46,7 +46,7 @@ Or you just compile the source and add the `StateMachine.framework` to your own 
 
 ## Example
 
-Say you want to state machine to capture the flow in this diagram:
+Say you want to create the state machine to capture the flow in this diagram:
 
 ![flow diagram](example-flow-diagram.png)
 
