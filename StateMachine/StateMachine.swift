@@ -29,11 +29,11 @@ Sample code:
 
     let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
 
-    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
         return .Loading
     }
 
-    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> StateMachineTests.LoadState in
         return .Complete // (or return .Failed if that's the case)
     }
 
@@ -138,15 +138,34 @@ public class StateMachine<S, A where S: Hashable, A: Hashable, S: Printable, A: 
 
     /** Performs a registered action
 
-    The action will only be performed if the machine is in one of the states for which the action was registered.
+    The action will only be performed if the machine is in one of the states for which the action was registered. The you specify a delay the action will be performed on the main queue.
+    
+    - Note: If you don't specify a delay, you must be guarantee that the method is not called from within an action handler registered with the machine.
 
     - parameter action: The action to perform
-    - returns: Returns the new state if the action was run, or nil if the action not run
+    - parameter delay: The delay in seconds after which the action should be performed
+    - returns: Returns the new state if the action was run, or nil if the action is not (yet) run
     */
-    public func performAction(action: A) -> S? {
+    public func performAction(action: A, afterDelay delay: NSTimeInterval? = nil) -> S? {
+        if let delay = delay {
+            dispatch_after(
+                dispatch_time(DISPATCH_TIME_NOW, Int64(delay * Double(NSEC_PER_SEC))),
+                dispatch_get_main_queue(), { [weak self] in
+                    self?.performAction(action)
+            })
+            return nil
+        }
+
+        if actionHandlerRunning {
+            print("WARNING: The action \"\(action)\" is ignored because there is still another unfinished action. If you called performAction (indirectly) from within an action handler, consider setting a delay.")
+            return nil
+        }
+
         if let (fromStates, toStates, actionHandler) = actions[action] {
             if fromStates.contains(state) {
+                actionHandlerRunning = true
                 let newState = actionHandler(machine: self)
+                actionHandlerRunning = false
                 if toStates.contains(newState) {
                     state = newState
                     return state
@@ -157,6 +176,8 @@ public class StateMachine<S, A where S: Hashable, A: Hashable, S: Printable, A: 
         }
         return nil
     }
+
+    private var actionHandlerRunning: Bool = false
 
     private var changes: [(Set<S>?, Set<S>?, ChangeHandler)] = []
 

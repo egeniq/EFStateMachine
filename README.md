@@ -89,11 +89,11 @@ let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty)
 For each action, register a handler to run. The handler will only be run if the current state of the state machine is one of those listed in `fromStates`. The handler must return a state, which will become the new state of the state machine.
 
 ```swift
-machine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading) { (machine) -> LoadState in
+machine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> LoadState in
     return .Loading
 }
 
-machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> LoadState in
+machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> LoadState in
     return .Complete // (or return .Failed if that's the case)
 }
 

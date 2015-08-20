@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "EFStateMachine"
-  s.version      = "0.1.4"
+  s.version      = "0.1.5"
   s.summary      = "A Simple State Machine in Swift."
   s.description  = <<-DESC
 A Simple State Machine in Swift

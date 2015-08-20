@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C7072AAF1B85C5BA00AF8396 /* CHANGELOG */ = {isa = PBXFileReference; lastKnownFileType = text; path = CHANGELOG; sourceTree = SOURCE_ROOT; };
 		C76FF06F1B8079400095F345 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		C76FF0701B8079400095F345 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		C76FF0711B8080580095F345 /* EFStateMachine.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; fileEncoding = 4; path = EFStateMachine.podspec; sourceTree = SOURCE_ROOT; };
@@ -80,6 +81,7 @@
 			children = (
 				C76FF06F1B8079400095F345 /* LICENSE */,
 				C76FF0701B8079400095F345 /* README.md */,
+				C7072AAF1B85C5BA00AF8396 /* CHANGELOG */,
 				C7EABEAD1B839A1F00FAF04C /* example-flow-diagram.dot */,
 				C7EABEAE1B839A1F00FAF04C /* example-flow-diagram.png */,
 				C76FF0711B8080580095F345 /* EFStateMachine.podspec */,
