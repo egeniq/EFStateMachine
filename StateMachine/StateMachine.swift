@@ -29,11 +29,11 @@ Sample code:
 
     let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
 
-    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
         return .Loading
     }
 
-    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> StateMachineTests.LoadState in
         return .Complete // (or return .Failed if that's the case)
     }
 
