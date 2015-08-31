@@ -213,22 +213,22 @@ class Flowdiagram<S, A where S: Hashable, A: Hashable, S: CustomStringConvertibl
             }
         }
 
-        let nodesStr = "".join(nodes.map() { (index: Int, state: S?, action: A?) in
+        let nodesStr = nodes.map({ (index: Int, state: S?, action: A?) in
             if let state = state {
                 return "    \(index) [label=\"\(state)\", shape=box]\n"
             } else if let action = action {
                 return "    \(index) [label=\"\(action)\", shape=oval]\n"
             }
             return "    \n"
-        })
+        }).joinWithSeparator("")
 
-        let linksStr = "".join(links.map() { (from: Int, to: Int, hasArrow: Bool) in
+        let linksStr = links.map({ (from: Int, to: Int, hasArrow: Bool) in
             if hasArrow {
                 return "    \(from) -> \(to)\n"
             } else {
                 return "    \(from) -> \(to) [arrowhead=none]\n"
             }
-        })
+        }).joinWithSeparator("")
 
         return "digraph {\n    graph [rankdir=TB]\n    \n    0 [label=\"\", shape=plaintext]\n    0 -> 1\n    \n    # node\n\(nodesStr)\n    \n    # links\n\(linksStr)\n}"
     }
