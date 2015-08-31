@@ -138,9 +138,9 @@ public class StateMachine<S, A where S: Hashable, A: Hashable, S: Printable, A: 
 
     /** Performs a registered action
 
-    The action will only be performed if the machine is in one of the states for which the action was registered. The you specify a delay the action will be performed on the main queue.
+    The action will only be performed if the machine is in one of the states for which the action was registered. If you specify a delay the action will be performed on the main queue.
     
-    - Note: If you don't specify a delay, you must be guarantee that the method is not called from within an action handler registered with the machine.
+    - Note: If you don't specify a delay, you must guarantee that the method is not called from within an action handler registered with the machine.
 
     - parameter action: The action to perform
     - parameter delay: The delay in seconds after which the action should be performed
