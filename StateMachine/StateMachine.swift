@@ -201,11 +201,15 @@ public class StateMachine<S, A where S: Hashable, A: Hashable, S: CustomStringCo
     
 }
 
-extension StateMachine {
+public extension StateMachine {
 
     var flowdiagramRepresentation: String {
         let representation = Flowdiagram(machine: self)
         return representation.description
+    }
+
+    func saveFlowdiagramRepresentationToPath(path: String) throws {
+        try flowdiagramRepresentation.writeToFile(path, atomically: true, encoding: NSUTF8StringEncoding)
     }
 
 }
