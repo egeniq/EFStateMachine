@@ -55,7 +55,8 @@ Sample code:
     machine.performAction(.Load) // returns nil
 
 */
-public class StateMachine<S, A where S: Hashable, A: Hashable, S: CustomStringConvertible, A: CustomStringConvertible> {
+
+public class StateMachine<S, A where S: Hashable, A: Hashable> {
 
     /** An action handler
 
@@ -214,7 +215,7 @@ public extension StateMachine {
 
 }
 
-class Flowdiagram<S, A where S: Hashable, A: Hashable, S: CustomStringConvertible, A: CustomStringConvertible>: CustomStringConvertible {
+class Flowdiagram<S, A where S: Hashable, A: Hashable>: CustomStringConvertible {
 
     let machine:  StateMachine<S, A>
 
