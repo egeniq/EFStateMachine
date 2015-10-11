@@ -11,25 +11,17 @@ import StateMachine
 
 class StateMachineTests: XCTestCase {
 
-    private enum TestLoadState: String, Printable {
-        case Empty = "Empty", Loading = "Loading", Partial = "Partial", Complete = "Complete", Failed = "Failed"
-
-        var description: String {
-            return rawValue
-        }
+    private enum TestLoadState: String {
+        case Empty, Loading, Partial, Complete, Failed
     }
 
-    private enum TestLoadAction: String, Printable {
-        case Load = "Load", FinishLoading = "FinishLoading", LoadMore = "LoadMore", Cancel = "Cancel", Reset = "Reset", Mystery = "Mystery"
-
-        var description: String {
-            return rawValue
-        }
+    private enum TestLoadAction: String {
+        case Load, FinishLoading, LoadMore, Cancel, Reset, Mystery
     }
 
     private var loadMachine: StateMachine<TestLoadState, TestLoadAction>!
 
-    private func setupLoadMachine(length: UInt = 3) -> StateMachine<TestLoadState, TestLoadAction> {
+    private func setupLoadMachine(length length: UInt = 3) -> StateMachine<TestLoadState, TestLoadAction> {
         let machine = StateMachine<TestLoadState, TestLoadAction>(initialState: .Empty, maxHistoryLength: length)
 
         machine.registerAction(.Load, fromStates: [.Empty], toStates: [.Loading]) { (machine) -> StateMachineTests.TestLoadState in
@@ -176,57 +168,58 @@ class StateMachineTests: XCTestCase {
 
     }
 
-    func testSampleCode() {
-        enum LoadState: String, Printable {
-            case Empty = "Empty"
-            case Loading = "Loading"
-            case Complete = "Complete"
-            case Failed = "Failed"
+    var infoLabel: UILabel = UILabel()
 
-            var description: String {
-                return rawValue
-            }
+    func testSampleCode() {
+        enum LoadState: String {
+            case Empty
+            case Loading
+            case Complete
+            case Failed
         }
 
-        enum LoadAction: String, Printable {
-            case Load = "Load"
-            case FinishLoading = "FinishLoading"
-            case Cancel = "Cancel"
-            case Reset = "Reset"
-
-            var description: String {
-                return rawValue
-            }
+        enum LoadAction: String {
+            case Load
+            case FinishLoading
+            case Cancel
+            case Reset
         }
 
         let machine = StateMachine<LoadState, LoadAction>(initialState: .Empty)
 
-        machine.registerAction(.Load, fromStates: [.Empty], toStates: [.Loading]) { (machine) -> LoadState in
+        machine.registerAction(.Load, fromStates: [.Empty, .Failed], toStates: [.Loading]) { (machine) -> LoadState in
             return .Loading
         }
 
         machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> LoadState in
-            return .Complete
+            return .Complete // (or return .Failed if that's the case)
         }
 
-        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Empty]) { (machine) -> LoadState in
-            return machine.history[machine.history.count - 2]
-        }
-        
         machine.registerAction(.Reset, fromStates: [.Complete, .Failed], toStates: [.Empty]) { (machine) -> LoadState in
             return .Empty
         }
 
+        machine.registerAction(.Cancel, fromStates: [.Loading], toStates: [.Empty, .Failed]) { (machine) -> LoadState in
+            return machine.history[machine.history.count - 2]
+        }
+
+        machine.onChange(toStates: [.Complete]) { [unowned self] (machine, oldState, newState) -> Void in
+            self.infoLabel.text = "Complete!"
+        }
+
         // Start loading
         machine.performAction(.Load) // returns .Loading
-
+        
         // Loading finished
         machine.performAction(.FinishLoading) // returns .Complete and updates infoLabel to "Complete!"
-
+        
         // Try loading again (an invalid action)
         machine.performAction(.Load) // returns nil
 
-        let flowdiagram = machine.flowdiagramRepresentation
-        // flowdiagram.writeToFile("/path/to/example-flow-diagram.dot", atomically: true, encoding: NSUTF8StringEncoding, error: nil)
+        do {
+            try machine.saveFlowdiagramRepresentationToPath("/path/to/example-flow-diagram.dot")
+        } catch let error {
+            NSLog("Could not save flowdiagram: \(error)")
+        }
     }
 }
