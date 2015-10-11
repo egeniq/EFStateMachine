@@ -29,11 +29,11 @@ Sample code:
 
     let machine = StateMachine<LoadState, LoadAction>(initialState: .Start)
 
-    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.Load, fromStates: [.Start, .Failed], toStates: [.Loading]) { (machine) -> StateMachineTests.LoadState in
         return .Loading
     }
 
-    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed) { (machine) -> StateMachineTests.LoadState in
+    machine.registerAction(.FinishLoading, fromStates: [.Loading], toStates: [.Complete, .Failed]) { (machine) -> StateMachineTests.LoadState in
         return .Complete // (or return .Failed if that's the case)
     }
 
@@ -121,11 +121,11 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     Registers a handler to run when performAction() is called. The action is only to be run if the state matches any of
     the states in the fromStates set. The handler must return a new state which will be set on the state machine after
     the handler has run.
-    
+
     - Note: Only one handler can be registered for an action.
-    
+
     - Warning: Make sure to avoid retain loops in your code. For example, if you setup the machine in a variable of your
-    view controller and you then try to access that view controller from the actionHandler, you should use `[weak self]` 
+    view controller and you then try to access that view controller from the actionHandler, you should use `[weak self]`
     or `[unowned self]` for the handler.
 
     - parameter action: The action name
@@ -139,11 +139,10 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
 
     /** Performs a registered action
 
-    The action will only be performed if the machine is in one of the states for which the action was registered. If 
-    you specify a delay the action will be performed on the main queue.
+    The action will only be performed if the machine is in one of the states for which the action was registered. If you specify a delay the action will be performed on the main queue.
+    
+    - Note: If you don't specify a delay, you must guarantee that the method is not called from within an action handler registered with the machine.
 
-    - Note: If you don't specify a delay, you must guarantee that the method is not called from within an action handler 
-    registered with the machine.
     - parameter action: The action to perform
     - parameter delay: The delay in seconds after which the action should be performed
     - returns: Returns the new state if the action was run, or nil if the action is not (yet) run
@@ -154,7 +153,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
                 dispatch_time(DISPATCH_TIME_NOW, Int64(delay * Double(NSEC_PER_SEC))),
                 dispatch_get_main_queue(), { [weak self] in
                     self?.performAction(action)
-                })
+            })
             return nil
         }
 
@@ -186,9 +185,9 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     /** Registers a handler to run on state change
 
     Registers a handler to run when the state of the machine changes. A change handler only gets run if the old state
-    occurs in the fromStates set and the new state occurs in the toStates set. A nil set for either means any state 
+    occurs in the fromStates set and the new state occurs in the toStates set. A nil set for either means any state
     is acceptable.
-    
+
     - Note: If an action set the same state as was already set, these handlers get run too.
     - Note: The change handlers will be run in the order they were registered.
 
@@ -199,7 +198,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable> {
     public func onChange(fromStates fromStates: Set<S>? = nil, toStates: Set<S>? = nil, changeHandler: ChangeHandler) {
         changes.append((fromStates, toStates, changeHandler))
     }
-    
+
 }
 
 public extension StateMachine {

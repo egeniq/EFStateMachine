@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C7072AAF1B85C5BA00AF8396 /* CHANGELOG */ = {isa = PBXFileReference; lastKnownFileType = text; path = CHANGELOG; sourceTree = SOURCE_ROOT; };
 		C76FF06F1B8079400095F345 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		C76FF0701B8079400095F345 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		C76FF0711B8080580095F345 /* EFStateMachine.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; fileEncoding = 4; path = EFStateMachine.podspec; sourceTree = SOURCE_ROOT; };
@@ -34,6 +35,8 @@
 		C7D751111B7ED7C900EB7571 /* StateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachineTests.swift; sourceTree = "<group>"; };
 		C7D751131B7ED7C900EB7571 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C7D7511C1B7ED87500EB7571 /* StateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
+		C7EABEAD1B839A1F00FAF04C /* example-flow-diagram.dot */ = {isa = PBXFileReference; lastKnownFileType = text; path = "example-flow-diagram.dot"; sourceTree = SOURCE_ROOT; };
+		C7EABEAE1B839A1F00FAF04C /* example-flow-diagram.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "example-flow-diagram.png"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +81,9 @@
 			children = (
 				C76FF06F1B8079400095F345 /* LICENSE */,
 				C76FF0701B8079400095F345 /* README.md */,
+				C7072AAF1B85C5BA00AF8396 /* CHANGELOG */,
+				C7EABEAD1B839A1F00FAF04C /* example-flow-diagram.dot */,
+				C7EABEAE1B839A1F00FAF04C /* example-flow-diagram.png */,
 				C76FF0711B8080580095F345 /* EFStateMachine.podspec */,
 				C7D751051B7ED7C900EB7571 /* StateMachine.h */,
 				C7D7511C1B7ED87500EB7571 /* StateMachine.swift */,

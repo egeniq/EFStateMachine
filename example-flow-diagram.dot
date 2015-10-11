@@ -1,0 +1,30 @@
+digraph {
+    graph [rankdir=TB]
+    
+    0 [label="", shape=plaintext]
+    0 -> 1
+    
+    # node
+    1 [label="Empty", shape=box]
+    2 [label="Loading", shape=box]
+    3 [label="Cancel", shape=oval]
+    4 [label="Load", shape=oval]
+    5 [label="Complete", shape=box]
+    6 [label="FinishLoading", shape=oval]
+    7 [label="Failed", shape=box]
+    8 [label="Reset", shape=oval]
+
+    
+    # links
+    2 -> 3 [arrowhead=none]
+    3 -> 1
+    1 -> 4 [arrowhead=none]
+    4 -> 2
+    2 -> 6 [arrowhead=none]
+    6 -> 5
+    6 -> 7
+    5 -> 8 [arrowhead=none]
+    8 -> 1
+    7 -> 8 [arrowhead=none]
+
+}
