@@ -26,7 +26,7 @@ It is also possible to register multiple handlers that get run when certain stat
 
 You need at least iOS 8.0 or Mac OS X 10.9.
 
-This implementation is written using Swift 1.2. A version for Swift 2.0 is available on a separate branch. 
+This implementation is written using Swift 2.0. Use version 0.1.5 if you still need support for Swift 1.2. 
 
 ## Documentation
 
@@ -36,11 +36,11 @@ The API is fully documented in the source. See also the [example](#example) belo
 
 To install using CocoaPods, add to your Podfile:
 
-    pod 'EFStateMachine', '~> 0.1'
+    pod 'EFStateMachine', '~> 0.2'
 
 To install using Carthage, add to your Cartfile:
 
-    github "Egeniq/EFStateMachine" ~> 0.1
+    github "Egeniq/EFStateMachine" ~> 0.2
 
 Or you just compile the source and add the `StateMachine.framework` to your own project.
 
@@ -50,33 +50,25 @@ Say you want to create the state machine to capture the flow in this diagram:
 
 ![flow diagram](example-flow-diagram.png)
 
-First, create an `enum` to hold the states. It should conform to the protocols `Hashable` and `Printable`.
+First, create an `enum` to hold the states. It should conform to the `Hashable` protocol. Using a `String` typed `enum` is recommended.
 
 ```swift
-enum LoadState: String, Printable {
-    case Empty = "Empty"
-    case Loading = "Loading"
-    case Complete = "Complete"
-    case Failed = "Failed"
-
-    var description: String {
-        return rawValue
-    }
+enum LoadState: String {
+    case Empty
+    case Loading
+    case Complete
+    case Failed
 }
 ```
 
 The `enum` for the actions is declared the same way.
 
 ```swift
-enum LoadAction: String, Printable {
-    case Load = "Load"
-    case FinishLoading = "FinishLoading"
-    case Cancel = "Cancel"
-    case Reset = "Reset"
-
-    var description: String {
-        return rawValue
-    }
+enum LoadAction: String {
+    case Load
+    case FinishLoading
+    case Cancel
+    case Reset
 }
 ```
 
@@ -136,8 +128,11 @@ machine.performAction(.Load) // returns nil
 To get a flow diagram like shown above, you save the string returned by the `flowdiagramRepresentation` property to a dot file. You can render the diagram with the free app [GraphViz](http://graphviz.org).
 
 ```swift
-let flowdiagram = machine.flowdiagramRepresentation
-flowdiagram.writeToFile("/path/to/example-flow-diagram.dot", atomically: true, encoding: NSUTF8StringEncoding, error: nil)
+do {
+    try machine.saveFlowdiagramRepresentationToPath("/path/to/example-flow-diagram.dot")
+} catch let error {
+    NSLog("Could not save flowdiagram: \(error)")
+}
 ```
 
 This creates a file containing:

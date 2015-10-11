@@ -55,7 +55,8 @@ Sample code:
     machine.performAction(.Load) // returns nil
 
 */
-public class StateMachine<S, A where S: Hashable, A: Hashable, S: Printable, A: Printable> {
+
+public class StateMachine<S, A where S: Hashable, A: Hashable> {
 
     /** An action handler
 
@@ -138,9 +139,9 @@ public class StateMachine<S, A where S: Hashable, A: Hashable, S: Printable, A: 
 
     /** Performs a registered action
 
-    The action will only be performed if the machine is in one of the states for which the action was registered. The you specify a delay the action will be performed on the main queue.
+    The action will only be performed if the machine is in one of the states for which the action was registered. If you specify a delay the action will be performed on the main queue.
     
-    - Note: If you don't specify a delay, you must be guarantee that the method is not called from within an action handler registered with the machine.
+    - Note: If you don't specify a delay, you must guarantee that the method is not called from within an action handler registered with the machine.
 
     - parameter action: The action to perform
     - parameter delay: The delay in seconds after which the action should be performed
@@ -194,7 +195,7 @@ public class StateMachine<S, A where S: Hashable, A: Hashable, S: Printable, A: 
     - parameter toStates: The handler is only run if the new state is in this set. If nil, any state is acceptable.
     - parameter changeHandler: The handler to run
     */
-    public func onChange(fromStates: Set<S>? = nil, toStates: Set<S>? = nil, changeHandler: ChangeHandler) {
+    public func onChange(fromStates fromStates: Set<S>? = nil, toStates: Set<S>? = nil, changeHandler: ChangeHandler) {
         changes.append((fromStates, toStates, changeHandler))
     }
 
@@ -207,9 +208,13 @@ public extension StateMachine {
         return representation.description
     }
 
+    func saveFlowdiagramRepresentationToPath(path: String) throws {
+        try flowdiagramRepresentation.writeToFile(path, atomically: true, encoding: NSUTF8StringEncoding)
+    }
+
 }
 
-class Flowdiagram<S, A where S: Hashable, A: Hashable, S: Printable, A: Printable>: Printable {
+class Flowdiagram<S, A where S: Hashable, A: Hashable>: CustomStringConvertible {
 
     let machine:  StateMachine<S, A>
 
@@ -225,31 +230,31 @@ class Flowdiagram<S, A where S: Hashable, A: Hashable, S: Printable, A: Printabl
         addState(a)
 
         for (action, (fromStates, toStates, _)) in machine.actions {
-            for fromState in fromStates {
+            fromStates.forEach() { fromState in
                 let fromStateIndex = addState(fromState)
-                for toState in toStates {
+                toStates.forEach() { toState in
                     let toStateIndex = addState(toState)
                     addAction(action, fromIndex: fromStateIndex, toIndex: toStateIndex)
                 }
             }
         }
 
-        let nodesStr = "".join(nodes.map() { (index: Int, state: S?, action: A?) in
+        let nodesStr = nodes.map({ (index: Int, state: S?, action: A?) in
             if let state = state {
                 return "    \(index) [label=\"\(state)\", shape=box]\n"
             } else if let action = action {
                 return "    \(index) [label=\"\(action)\", shape=oval]\n"
             }
             return "    \n"
-            })
+        }).joinWithSeparator("")
 
-        let linksStr = "".join(links.map() { (from: Int, to: Int, hasArrow: Bool) in
+        let linksStr = links.map({ (from: Int, to: Int, hasArrow: Bool) in
             if hasArrow {
                 return "    \(from) -> \(to)\n"
             } else {
                 return "    \(from) -> \(to) [arrowhead=none]\n"
             }
-            })
+        }).joinWithSeparator("")
 
         return "digraph {\n    graph [rankdir=TB]\n    \n    0 [label=\"\", shape=plaintext]\n    0 -> 1\n    \n    # node\n\(nodesStr)\n    \n    # links\n\(linksStr)\n}"
     }
@@ -265,8 +270,7 @@ class Flowdiagram<S, A where S: Hashable, A: Hashable, S: Printable, A: Printabl
             return index
         } else {
             let index = nodes.count + 1
-            let node: (Int, S?, A?) = (index, state, nil)
-            nodes.append(node)
+            nodes.append((index, state, nil))
             return index
         }
     }
@@ -279,8 +283,7 @@ class Flowdiagram<S, A where S: Hashable, A: Hashable, S: Printable, A: Printabl
             return index
         } else {
             let index = nodes.count + 1
-            let node: (Int, S?, A?) = (index, nil, action)
-            nodes.append(node)
+            nodes.append((index, nil, action))
             return index
         }
     }
@@ -291,13 +294,13 @@ class Flowdiagram<S, A where S: Hashable, A: Hashable, S: Printable, A: Printabl
         addLink(fromIndex: actionIndex, toIndex: toIndex, hasArrow: true)
     }
 
-    private func addLink(#fromIndex: Int, toIndex: Int, hasArrow: Bool) {
-        if !contains(links, { (from: Int, to: Int, arrow: Bool) in
+    private func addLink(fromIndex fromIndex: Int, toIndex: Int, hasArrow: Bool) {
+        if !links.contains({ (from: Int, to: Int, arrow: Bool) in
             return from == fromIndex && to == toIndex && arrow == hasArrow
         }) {
             links.append((fromIndex, toIndex, hasArrow))
         }
     }
-    
+
 }
 
