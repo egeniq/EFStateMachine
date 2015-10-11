@@ -265,7 +265,7 @@ class Flowdiagram<S, A where S: Hashable, A: Hashable>: CustomStringConvertible 
     private func addState(state: S) -> Int {
         let filtered = nodes.filter() { (index: Int, aState: S?, action: A?) in
             return aState == nil ? false : state == aState!
-            }
+        }
         if let (index, _, _) = filtered.first {
             return index
         } else {

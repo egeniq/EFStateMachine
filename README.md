@@ -26,7 +26,7 @@ It is also possible to register multiple handlers that get run when certain stat
 
 You need at least iOS 8.0 or Mac OS X 10.9.
 
-This implementation is written using Swift 2.0. Use version 0.1.4 if you still need support for Swift 1.2. 
+This implementation is written using Swift 2.0. Use version 0.1.5 if you still need support for Swift 1.2. 
 
 ## Documentation
 
